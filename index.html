@@ -2,7 +2,10 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <!-- CSS -->
     <link
@@ -11,25 +14,107 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
     <link rel="stylesheet" href="main.css" />
 
-    <title>Client JS - atelier 1</title>
+    <title>musiq</title>
   </head>
 
   <body>
     <header class="container">
-      <h1 class="text-center display-1">Client JS (atelier 1)</h1>
-      <a href="https://reqres.in" target="_blank" class="api-url"><i class="bi bi-envelope-at"></i> https://reqres.in</a>
+      <h1 class="text-center display-1">musiq</h1>
+      <div class="container text-center mt-5">
+        <!-- Bouton pour ouvrir le formulaire d'ajout de musique -->
+        <button
+          type="button"
+          class="btn btn-primary btn-lg d-flex align-items-center mx-auto"
+          data-bs-toggle="modal"
+          data-bs-target="#addMusicModal"
+        >
+          <i class="bi bi-music-note-list me-2"></i> Ajouter une musique
+        </button>
+      </div>
+
+      <!-- Modal pour le formulaire d'ajout de musique -->
+      <div
+        class="modal fade"
+        id="addMusicModal"
+        tabindex="-1"
+        aria-labelledby="addMusicModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addMusicModalLabel">
+                Ajouter une nouvelle musique
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form id="addMusicForm">
+                <div class="form-group">
+                  <label for="musicTitle">Titre</label>
+                  <input
+                    type="text"
+                    id="musicTitle"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="musicArtist">Artiste</label>
+                  <input
+                    type="text"
+                    id="musicArtist"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="musicAlbum">Album</label>
+                  <input
+                    type="text"
+                    id="musicAlbum"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="musicYear">Année</label>
+                  <input type="text" id="musicYear" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="musicGenre">Genre</label>
+                  <input type="text" id="musicGenre" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
     <main class="container">
-      <p>Cette section présente <span id="musiques-count" class="fw-bold"></span> musiques.</p>
+      <p>
+        Cette section présente
+        <span id="musiques-count" class="fw-bold"></span> musiques.
+      </p>
       <div id="musiques-wrapper">
         <div class="choose-page m-1"></div>
         <div class="musiques"></div>
-        </div>
+      </div>
     </main>
 
     <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

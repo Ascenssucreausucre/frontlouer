@@ -71,6 +71,8 @@ const App = {
   init() {
     this.HELPERS.log.call(this, "Application démarrée.");
     this.injectDatas(); // Charger les musiques et la pagination pour la première page
+    document.getElementById("addMusicForm").onsubmit =
+      this.handleSubmit.bind(this);
 
     // Ajouter un écouteur d'événements délégué pour la pagination
     this._dom.pagesNumbers.addEventListener("click", (event) =>
@@ -266,17 +268,18 @@ const App = {
       try {
         // Récupérer les nouvelles données du formulaire
         const updatedData = {
-          title: musiqueDiv.querySelector(".edit-title").value,
+          titre: musiqueDiv.querySelector(".edit-title").value,
           artist: musiqueDiv.querySelector(".edit-artist").value,
           album: musiqueDiv.querySelector(".edit-album").value,
         };
+        console.log(updatedData);
 
         const response = await fetch(`${this.URL}musiques/${musiqueId}`, {
           method: "PATCH", // Utilisez PUT pour mettre à jour
           headers: {
             "Content-Type": "application/json", // Indique que nous envoyons des données JSON
           },
-          body: JSON.stringify(updatedData.title), // Utiliser les nouvelles données
+          body: JSON.stringify(updatedData), // Utiliser les nouvelles données
         });
 
         if (!response.ok) {
@@ -303,11 +306,76 @@ const App = {
       }
     };
   },
+  handleSubmit: async function (event) {
+    event.preventDefault();
+
+    // Récupérer les valeurs du formulaire
+    const newMusicData = {
+      titre: document.getElementById("musicTitle").value,
+      artist: document.getElementById("musicArtist").value,
+      album: document.getElementById("musicAlbum").value,
+      annee: document.getElementById("musicYear").value || null, // Si l'année est vide, envoyer `null`
+      genre: document.getElementById("musicGenre").value || null, // Si le genre est vide, envoyer `null`
+    };
+
+    try {
+      // Envoyer la requête POST pour créer une nouvelle musique
+      const response = await fetch(this.URL + "musiques", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMusicData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'ajout de la musique.");
+      }
+
+      const result = await response.json();
+
+      // Fermer le modal et afficher une notification de succès
+      this.closeModal();
+      alert("Musique ajoutée avec succès!");
+
+      // Réinitialiser le formulaire
+      this.resetForm();
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la musique:", error);
+      alert("Une erreur s'est produite. Veuillez réessayer.");
+    }
+  },
+
+  // Méthode pour fermer le modal Bootstrap
+  closeModal: function () {
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("addMusicModal")
+    );
+    modal.hide();
+  },
+
+  // Méthode pour réinitialiser le formulaire
+  resetForm: function () {
+    document.getElementById("addMusicForm").reset();
+  },
+
+  // Méthode pour fermer le modal Bootstrap
+  closeModal: function () {
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("addMusicModal")
+    );
+    modal.hide();
+  },
+
+  // Méthode pour réinitialiser le formulaire
+  resetForm: function () {
+    document.getElementById("addMusicForm").reset();
+  },
 
   // Méthodes utilitaires regroupées dans la propriété HELPERS
   HELPERS: {
     log(message) {
-      console.log(`%c${message}`, "color: blue; font-size: 16px");
+      console.log(`%c${message}`, "color: white; font-size: 16px");
     },
   },
 };
