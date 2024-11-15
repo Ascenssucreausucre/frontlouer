@@ -1,0 +1,359 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #273469;
+  --secondary-color: #e4d9ff;
+  --tertiary-color: #1e2749;
+  --text-color: #333333;
+  --background-color: #30343f;
+
+  --font-size-base: clamp(0.8rem, 1vw, 1.2rem); /* Police de base */
+  --font-size-large: clamp(1.2rem, 2vw, 1.5rem); /* Grands titres */
+  --font-size-xlarge: clamp(2.5rem, 4vw, 4rem); /* Titres principaux */
+}
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+
+h1,
+h2,
+h3,
+h5,
+p,
+label,
+ul,
+h4,
+a {
+  font-family: "Exo 2", sans-serif;
+  font-optical-sizing: auto;
+  /* font-weight: 400; */
+  font-style: normal;
+  text-decoration: none;
+  list-style-type: none;
+  color: var(--text-color);
+}
+
+body {
+  background-color: var(--background-color);
+}
+header {
+  background-color: var(--tertiary-color);
+  color: white;
+  display: flex;
+  height: 80px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  position: fixed;
+  z-index: 2;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.322));
+}
+header h1 {
+  color: white;
+  font-size: var(--font-size-xlarge);
+}
+main {
+  padding-top: 100px;
+  border-radius: 15px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.322));
+  background-color: var(--primary-color);
+  margin-inline: 20vw;
+}
+main > p {
+  color: white;
+  margin-left: 20px;
+  font-size: var(--font-size-large);
+  font-weight: 100;
+}
+.add-music-btn {
+  background-color: var(--primary-color); /* Couleur de fond verte */
+  color: white; /* Texte blanc */
+  padding: 12px 24px; /* Espacement intérieur (padding) */
+  border: none; /* Enlever les bordures */
+  border-radius: 30px; /* Bordures arrondies */
+  font-size: var(--font-size-base); /* Taille du texte */
+  cursor: pointer; /* Curseur en forme de main */
+  transition: all 0.3s ease; /* Transition fluide pour les effets */
+}
+
+/* Effet au survol */
+.add-music-btn:hover {
+  background-color: var(--secondary-color);
+  color: var(--text-color); /* Légère variation de la couleur de fond */
+  transform: scale(1.05); /* Agrandir légèrement le bouton */
+}
+
+/* Effet lorsque le bouton est cliqué */
+.add-music-btn:active {
+  transform: scale(0.98); /* Réduire légèrement la taille au clic */
+}
+body.modal-open {
+  overflow: auto !important; /* Remet l'overflow à sa valeur d'origine */
+  padding-right: 0 !important; /* Supprime le padding droit ajouté pour compenser la barre de défilement */
+}
+
+/* Icône à gauche du texte */
+.add-music-btn i {
+  margin-right: 8px; /* Espacement entre l'icône et le texte */
+}
+#addMusicModal {
+  position: absolute;
+  top: 100%;
+  right: 5vw;
+  background-color: #1e2749;
+  padding: 15px;
+  border-radius: 0 0px 15px 15px;
+}
+#addMusicForm {
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  font-size: var(--font-size-base);
+}
+#addMusicForm div {
+  margin-block: 5px;
+  font-size: var(--font-size-base);
+  display: flex;
+  justify-content: space-between;
+}
+#addMusicForm input {
+  border: none;
+  border-radius: 5px;
+  height: 25px;
+  width: 200px;
+  margin-left: 10px;
+  padding-left: 5px;
+}
+#addMusicForm button {
+  padding-inline: 10px;
+  font-weight: 600;
+}
+#musiques-wrapper {
+  margin-top: 20px;
+  padding: 20px;
+}
+#music-loading {
+  color: var(--secondary-color);
+  font-weight: 400;
+}
+.musiques {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 4 colonnes égales */
+  gap: 16px; /* espace entre les éléments */
+}
+.musique {
+  background-color: var(--secondary-color);
+  border-radius: 5px;
+  padding: 7px 10px;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.322));
+  overflow-x: hidden;
+  overflow-y: visible;
+  position: relative;
+}
+.musique > * {
+  margin-block: 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  overflow-x: hidden;
+}
+.musique a {
+  color: var(--primary-color);
+}
+.edit-form {
+  position: absolute;
+  white-space: normal;
+  width: 100%;
+  white-space: wrap;
+  text-align: left;
+  z-index: 100;
+  top: 100%;
+}
+.edit-form input {
+  border: none;
+  border-radius: 5px;
+  height: 25px;
+  width: 200px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+.edit-form .btn {
+  padding-inline: 15px;
+}
+h3 {
+  font-size: var(--font-size-large);
+  font-weight: 800;
+}
+p {
+  text-decoration: none;
+  color: black;
+  font-weight: 600;
+}
+.musique--operations {
+  display: flex;
+  justify-content: center;
+}
+
+.btn {
+  padding: 5px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  flex: 1;
+  margin: 5px;
+}
+.btn:hover {
+  cursor: pointer;
+}
+.btn i {
+  margin-right: 5px;
+}
+#details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* transform: translate(-50%, -20%); */
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  display: none; /* Masqué par défaut */
+}
+#details-modal > div {
+  position: relative;
+  margin-inline: 15vw;
+  padding-bottom: 50px;
+  background-color: var(--secondary-color);
+  border-radius: 20px;
+}
+#details-modal.show {
+  display: block;
+}
+#details-modal .btn {
+  position: absolute;
+  font-size: var(--font-size-base);
+  padding: 10px 15px;
+  border-radius: 50px;
+  right: 10px;
+  top: 10px;
+  background-color: var(--tertiary-color);
+  color: var(--secondary-color);
+}
+#details-content {
+  padding: 20px 10vw;
+}
+#details-content > * {
+  margin-block: 10px;
+  font-size: var(--font-size-base);
+}
+#details-content p,
+#details-content h4 {
+  color: var(--text-color);
+  font-size: 1.4rem;
+}
+#details-content h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: var(--font-size-xlarge);
+}
+#details-content hr {
+  margin-bottom: 25px;
+  width: 80%;
+  text-align: center;
+  margin-inline: auto;
+}
+#details-content li {
+  padding-left: 20px;
+  color: var(--secondary-color);
+}
+#details-content > ul > li {
+  margin-top: 20px;
+  background-color: var(--tertiary-color);
+  padding: 20px;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 5px rgba(0 0 0 0.3));
+}
+.hidden {
+  display: none;
+}
+@media screen and (max-width: 1300px) {
+  .musiques {
+    grid-template-columns: repeat(2, 1fr); /* Passe à 2 colonnes */
+    gap: 12px; /* Ajuste l'espacement si nécessaire */
+  }
+}
+@media screen and (max-width: 800px) {
+  ::root {
+    --font-size-base: clamp(
+      0.7rem,
+      2vw,
+      0.8rem
+    ); /* Ajuste entre 0.7rem et 0.8rem */
+    --font-size-large: clamp(
+      1.2rem,
+      3vw,
+      1.4rem
+    ); /* Ajuste entre 1.2rem et 1.4rem */
+    --font-size-xlarge: clamp(
+      2rem,
+      4vw,
+      2.5rem
+    ); /* Ajuste entre 2rem et 2.5rem */
+  }
+  main {
+    margin-inline: clamp(20px, 10vw, 200px);
+  }
+  .musiques {
+    grid-template-columns: repeat(1, 1fr); /* Passe à 2 colonnes */
+    gap: 12px; /* Ajuste l'espacement si nécessaire */
+  }
+  #musiques-wrapper {
+    margin: 50px 5vw;
+  }
+
+  #details-modal .btn {
+    padding: 5px 8px;
+  }
+  .add-music-btn {
+    padding: 8px 16px;
+  }
+
+  @media screen and (max-width: 600px) {
+    main {
+      margin: 0 20px;
+    }
+  }
+
+  @media screen and (max-width: 400px) {
+    :root {
+      --font-size-base: clamp(
+        0.6rem,
+        1.5vw,
+        0.7rem
+      ); /* Ajuste entre 0.6rem et 0.7rem */
+      --font-size-large: clamp(
+        1rem,
+        2.5vw,
+        1.2rem
+      ); /* Ajuste entre 1rem et 1.2rem */
+      --font-size-xlarge: clamp(
+        1.5rem,
+        3vw,
+        2rem
+      ); /* Ajuste entre 1.5rem et 2rem */
+    }
+    main {
+      margin-inline: 10px;
+    }
+    #musiques-wrapper {
+      margin: 0;
+    }
+  }
+}

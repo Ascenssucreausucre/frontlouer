@@ -1,6 +1,6 @@
 const App = {
   // URL de l'API pour récupérer la liste des musiques
-  URL: "http://localhost/api/v1/", // Remplacer par l'URL de ton API
+  URL: "https://amiotflorian.alwaysdata.net/api/v1/", // Remplacer par l'URL de ton API
 
   // Fonction pour obtenir toutes les musiques pour une page donnée
   async getMusiques() {
@@ -49,8 +49,8 @@ const App = {
   },
 
   async getArtistByid(id) {
-    artist = (await this.getArtists()).find((artist) => artist.id == id);
-    return artist;
+    artiste = (await this.getArtists()).find((artiste) => artiste.id == id);
+    return artiste;
   },
 
   async getAlbumByid(id) {
@@ -62,7 +62,7 @@ const App = {
   _dom: {
     musiquesWrapper: document.querySelector("#musiques-wrapper .musiques"),
     musiquesCount: document.querySelector("#musiques-count"),
-    pagesNumbers: document.querySelector(".choose-page.m-1"), // Sélecteur pour les boutons
+    pagesNumbers: document.querySelector(".chose-pages"), // Sélecteur pour les boutons
   },
 
   /**
@@ -88,11 +88,9 @@ const App = {
    */
   async injectDatas() {
     // Afficher un message de chargement
-    this._dom.musiquesWrapper.innerHTML = `<p>Chargement des musiques...</p>`;
+    this._dom.musiquesWrapper.innerHTML = `<p id="music-loading">Chargement des musiques...</p>`;
 
-    // Charger le nombre de pages via l'API si c'est la première page
-    // const totalPages = await this.getNumberPages();
-    // Charger les musiques via l'API pour la page demandée
+    // Charger les musiques via l'API
     const musiques = await this.getMusiques();
 
     const musiquesWithDetails = await Promise.all(
@@ -105,6 +103,8 @@ const App = {
           ...musique,
           artisteNom: artiste ? artiste.nom : "Inconnu", // Si l'artiste est introuvable, mettre un nom par défaut
           albumTitre: album ? album.titre : "Inconnu", // Si l'album est introuvable, mettre un titre par défaut
+          artisteId: artiste ? artiste.id : null,
+          albumId: album ? album.id : null,
         };
       })
     );
@@ -118,31 +118,32 @@ const App = {
       return;
     }
 
-    // Générer le HTML des boutons de pagination si c'est la première page
-    // if (page === 1) {
-    //   this.generatePaginationButtons(totalPages);
-    // }
-
-    // Générer le HTML pour chaque musique
+    // Générer le HTML pour chaque musique avec des liens cliquables
     const html = musiquesWithDetails
       .map(
         (musique) => `
       <div class="musique p-2 border mb-2" data-id="${musique.id}">
         <h3>${musique.titre}</h3>
-        <p class="musique-artist">Artiste: ${musique.artisteNom}</p>
-        <p class="musique-album">Album: ${musique.albumTitre}</p>
+        <p class="musique-artiste">
+          Artiste: <a href="#" data-artiste-id="${musique.artisteId}" onclick="App.fetchDetails('artiste', ${musique.artisteId})">${musique.artisteNom}</a>
+          </p>
+          <p class="musique-album">
+            Album: <a href="#" data-album-id="${musique.albumId}" onclick="App.fetchDetails('album', ${musique.albumId})">${musique.albumTitre}</a>
+          </p>
+
         <div class="musique--operations mt-1 bg-white text-center border-top">
-            <button class="btn btn-link operation" data-operation="edit"><i class="bi bi-pencil"></i>éditer</button>
-            <button class="btn btn-link operation" data-operation="delete"><i class="bi bi-trash3"></i> effacer</button>
+          <button class="btn btn-link operation" data-operation="edit"><i class="bi bi-pencil"></i> Éditer</button>
+          <button class="btn btn-link operation" data-operation="delete"><i class="bi bi-trash3"></i> Effacer</button>
         </div>
         <div class="edit-form" style="display:none;">
-            <input type="text" class="edit-title" placeholder="Titre" />
-            <input type="text" class="edit-artist" placeholder="Artiste" />
-            <input type="text" class="edit-album" placeholder="Album" />
-            <button class="update-btn">Mettre à jour</button>
+          <input type="text" class="edit-title" placeholder="Titre" />
+          <input type="text" class="edit-artiste" placeholder="Artiste" />
+          <input type="text" class="edit-album" placeholder="Album" />
+          <button class="btn update-btn">Mettre à jour</button>
         </div>
       </div>
-      `
+
+    `
       )
       .join("");
 
@@ -201,8 +202,8 @@ const App = {
           );
           const musiqueData = {
             title: musiqueDiv.querySelector("h3").textContent,
-            artist: musiqueDiv
-              .querySelector(".musique-artist")
+            artiste: musiqueDiv
+              .querySelector(".musique-artiste")
               .textContent.replace("Artiste: ", ""),
             album: musiqueDiv
               .querySelector(".musique-album")
@@ -254,65 +255,85 @@ const App = {
       `.musique[data-id="${musiqueId}"]`
     );
     const editForm = musiqueDiv.querySelector(".edit-form");
+    const editButton = musiqueDiv.querySelector(
+      `button[data-operation="edit"]`
+    );
 
-    // Afficher le formulaire d'édition
-    editForm.style.display = "block"; // Afficher le formulaire
+    // Vérifier si le formulaire est actuellement affiché
+    const isFormOpen = editForm.style.display === "block";
 
-    // Remplir le formulaire avec les données actuelles
-    musiqueDiv.querySelector(".edit-title").value = musiqueData.title;
-    musiqueDiv.querySelector(".edit-artist").value = musiqueData.artist;
-    musiqueDiv.querySelector(".edit-album").value = musiqueData.album;
+    if (isFormOpen) {
+      // Fermer le formulaire et rétablir le texte du bouton
+      editForm.style.display = "none";
+      editButton.innerHTML = '<i class="bi bi-pencil"></i> Éditer';
+    } else {
+      // Ouvrir le formulaire et changer le texte du bouton
+      editForm.style.display = "block";
+      editButton.innerHTML = '<i class="bi bi-x-circle"></i> Fermer';
 
-    // Lorsque l'utilisateur soumet le formulaire, effectuer la mise à jour
-    editForm.querySelector(".update-btn").onclick = async () => {
-      try {
-        // Récupérer les nouvelles données du formulaire
-        const updatedData = {
-          titre: musiqueDiv.querySelector(".edit-title").value,
-          artist: musiqueDiv.querySelector(".edit-artist").value,
-          album: musiqueDiv.querySelector(".edit-album").value,
-        };
-        console.log(updatedData);
+      // Nettoyer les données en utilisant trim() pour enlever les espaces avant et après
+      const cleanedTitle = musiqueData.title.trim();
+      const cleanedArtist = musiqueData.artiste.trim();
+      const cleanedAlbum = musiqueData.album.trim();
 
-        const response = await fetch(`${this.URL}musiques/${musiqueId}`, {
-          method: "PATCH", // Utilisez PUT pour mettre à jour
-          headers: {
-            "Content-Type": "application/json", // Indique que nous envoyons des données JSON
-          },
-          body: JSON.stringify(updatedData), // Utiliser les nouvelles données
-        });
+      // Remplir le formulaire avec les données actuelles
+      musiqueDiv.querySelector(".edit-title").value = cleanedTitle;
+      musiqueDiv.querySelector(".edit-artiste").value = cleanedArtist;
+      musiqueDiv.querySelector(".edit-album").value = cleanedAlbum;
 
-        if (!response.ok) {
-          throw new Error("Erreur lors de la modification de la musique.");
+      // Assigner un événement de mise à jour pour le bouton "Mettre à jour"
+      editForm.querySelector(".update-btn").onclick = async () => {
+        try {
+          const updatedData = {
+            titre: musiqueDiv.querySelector(".edit-title").value.trim(),
+            artiste: musiqueDiv.querySelector(".edit-artiste").value.trim(),
+            album: musiqueDiv.querySelector(".edit-album").value.trim(),
+          };
+
+          const response = await fetch(`${this.URL}musiques/${musiqueId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Erreur lors de la modification de la musique.");
+          }
+
+          const updatedMusique = await response.json();
+          musiqueDiv.querySelector("h3").textContent = updatedData.titre;
+          musiqueDiv.querySelector(
+            ".musique-artiste"
+          ).textContent = `Artiste: ${updatedData.artiste}`;
+          musiqueDiv.querySelector(
+            ".musique-album"
+          ).textContent = `Album: ${updatedData.album}`;
+
+          // Masquer le formulaire et rétablir le texte du bouton
+          editForm.style.display = "none";
+          editButton.innerHTML = '<i class="bi bi-pencil"></i> Éditer';
+
+          this.HELPERS.log(
+            `Musique avec ID: ${musiqueId} modifiée avec succès.`
+          );
+        } catch (error) {
+          console.error("Erreur lors de la modification de la musique:", error);
         }
-
-        const updatedMusique = await response.json(); // Obtenir la musique mise à jour
-
-        // Mettre à jour le DOM avec les nouvelles données
-        musiqueDiv.querySelector("h3").textContent = updatedMusique.title;
-        musiqueDiv.querySelector(
-          ".musique-artist"
-        ).textContent = `Artiste: ${updatedMusique.artist}`;
-        musiqueDiv.querySelector(
-          ".musique-album"
-        ).textContent = `Album: ${updatedMusique.album}`;
-
-        // Masquer le formulaire après la mise à jour
-        editForm.style.display = "none";
-
-        this.HELPERS.log(`Musique avec ID: ${musiqueId} modifiée avec succès.`);
-      } catch (error) {
-        console.error("Erreur lors de la modification de la musique:", error);
-      }
-    };
+      };
+    }
   },
+
   handleSubmit: async function (event) {
     event.preventDefault();
+    const addMusicButton = document.getElementById("addMusicButton");
+    const addMusicForm = document.getElementById("addMusicForm");
 
     // Récupérer les valeurs du formulaire
     const newMusicData = {
       titre: document.getElementById("musicTitle").value,
-      artist: document.getElementById("musicArtist").value,
+      artiste: document.getElementById("musicArtist").value,
       album: document.getElementById("musicAlbum").value,
       annee: document.getElementById("musicYear").value || null, // Si l'année est vide, envoyer `null`
       genre: document.getElementById("musicGenre").value || null, // Si le genre est vide, envoyer `null`
@@ -377,6 +398,107 @@ const App = {
     log(message) {
       console.log(`%c${message}`, "color: white; font-size: 16px");
     },
+  },
+  async fetchDetails(type, id) {
+    const modal = document.getElementById("details-modal");
+    const content = document.getElementById("details-content");
+
+    // Afficher le modal
+    modal.classList.add("show");
+
+    // Effacer les anciens contenus
+    content.innerHTML = "<p>Chargement...</p>";
+
+    try {
+      let url = ""; // URL à appeler en fonction du type
+      let responseData = null;
+
+      // Définir l'URL de l'API selon le type
+      if (type === "artiste") {
+        url = `${this.URL}artistes/${id}/albums-musiques`;
+      } else if (type === "album") {
+        url = `${this.URL}albums/${id}/musiques`;
+      } else {
+        throw new Error("Type inconnu");
+      }
+
+      // Effectuer la requête API
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Erreur: ${type} non trouvé`);
+
+      responseData = await response.json();
+
+      // Afficher les données dans le contenu
+      if (type === "artiste") {
+        // Vérification de la structure de la réponse
+        if (!Array.isArray(responseData) || responseData.length === 0) {
+          throw new Error("Données de l'artiste introuvables");
+        }
+
+        // Extraire les données de l'artiste et de ses albums
+        const albums = responseData; // Si responseData est un tableau contenant les albums
+        const artisteId = albums[0]?.artiste_id || id;
+        const artiste = await this.getArtistByid(artisteId);
+
+        content.innerHTML = `
+                <h3>${artiste.nom}</h3>
+                <hr>
+                <p>Genre: ${artiste.genre || "Non spécifié"}</p>
+                <h4>Albums:</h4>
+                <ul>
+                    ${albums
+                      .map(
+                        (album) => `
+                        <li>
+                            <strong>${album.titre.trim()}</strong> (${
+                          album.annee || "Année inconnue"
+                        })
+                            <ul>
+                                ${album.musiques
+                                  .map(
+                                    (musique) =>
+                                      `<li>${musique.titre.trim()}</li>`
+                                  )
+                                  .join("")}
+                            </ul>
+                        </li>
+                    `
+                      )
+                      .join("")}
+                </ul>
+            `;
+      } else if (type === "album") {
+        // Vérification de la structure de la réponse
+        if (!Array.isArray(responseData) || responseData.length === 0) {
+          throw new Error("Données de l'album introuvables");
+        }
+
+        // Extraire les données du premier objet de la réponse
+        const musiques = responseData; // Tableau contenant les musiques
+        const albumId = musiques[0]?.album_id || id;
+        const album = await this.getAlbumByid(albumId);
+        const artiste = await this.getArtistByid(album.artiste_id);
+
+        content.innerHTML = `
+                <h3>${album.titre.trim()}</h3>
+                <hr>
+                <p>Année: ${album.annee || "Année inconnue"}</p>
+                <p>Artiste: ${artiste.nom}</p>
+                <h4>Chansons:</h4>
+                <ul>
+                    ${musiques
+                      .map((musique) => `<li>${musique.titre.trim()}</li>`)
+                      .join("")}
+                </ul>
+            `;
+      }
+    } catch (error) {
+      content.innerHTML = `<p>Erreur lors de la récupération des informations : ${error.message}</p>`;
+    }
+  },
+  // Fonction pour fermer le modal
+  closeDetails() {
+    document.getElementById("details-modal").classList.remove("show");
   },
 };
 
